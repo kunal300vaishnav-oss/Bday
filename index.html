@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIRTHDAY.exe</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#050908;color:#b9ffd0;
+  font-family:monospace;min-height:100vh;
+}
+main{max-width:520px;margin:auto;padding:24px 18px}
+.tag{color:#39ff88;font-size:12px;letter-spacing:3px}
+h1{color:#39ff88;font-size:30px;overflow-wrap:anywhere}
+h2{color:#fff}
+p{line-height:1.7;color:#c0d4c6}
+.panel{
+  border:1px solid #245b3a;border-radius:12px;
+  padding:20px;margin:18px 0;
+  background:#09120d;box-shadow:0 0 22px #0b2415;
+}
+button,input{
+  width:100%;padding:14px;margin-top:10px;
+  border-radius:7px;font:inherit;
+}
+button{
+  background:#39ff88;color:#031008;
+  border:0;font-weight:bold;cursor:pointer;
+}
+button.secondary{
+  background:#101b14;color:#b9ffd0;
+  border:1px solid #39ff88;
+}
+input{
+  background:#020503;color:white;border:1px solid #39ff88;
+}
+.hidden{display:none}
+#reply{white-space:pre-wrap;color:#39ff88}
+footer{color:#536a5a;font-size:11px;text-align:center}
+</style>
+</head>
+<body>
+<main>
+  <div class="tag">SYSTEM BOOT // 01</div>
+  <h1>BIRTHDAY.exe</h1>
+  <p>A classified birthday investigation.</p>
+
+  <section class="panel" id="intro">
+    <p>⚠ An unusual event has been detected.</p>
+    <p>One human has completed another revolution around the Sun.</p>
+    <label for="name">IDENTIFY THE SUBJECT</label>
+    <input id="name" maxlength="24" placeholder="Enter their name">
+    <button onclick="startGame()">START INVESTIGATION →</button>
+  </section>
+
+  <section class="panel hidden" id="game">
+    <div class="tag" id="level">LEVEL 01</div>
+    <h2 id="question"></h2>
+    <p id="description"></p>
+    <div id="choices"></div>
+    <button class="secondary" onclick="hint()">REQUEST A HINT</button>
+    <p id="reply" aria-live="polite"></p>
+  </section>
+
+  <section class="panel hidden" id="ending">
+    <div class="tag">CLASSIFIED FILE UNLOCKED</div>
+    <h2>MISSION COMPLETE ✦</h2>
+    <p id="wish"></p>
+    <p>The universe has one more chapter prepared for you.</p>
+    <button onclick="restart()">RESTART MISSION ↻</button>
+  </section>
+  <footer>ALL SYSTEMS OPERATIONAL // BIRTHDAY DIVISION</footer>
+</main>
+
+<script>
+let player = "Agent";
+let stage = 0;
+let solved = false;
+
+const levels = [
+ {
+  title:"LEVEL 01 // THE CLOCK",
+  question:"What gets bigger every birthday, but never gets smaller?",
+  description:"Three options. Choose carefully.",
+  choices:["Your age","Your height","The number of candles you started with"],
+  answer:0,
+  hint:"It measures how many years you have lived.",
+  success:"Correct. Time leaves clues, Agent."
+ },
+ {
+  title:"LEVEL 02 // THE SHADOW",
+  question:"I follow you everywhere, but disappear in darkness. What am I?",
+  description:"The next clue is hiding in plain sight.",
+  choices:["Your shadow","Your echo","Your reflection"],
+  answer:0,
+  hint:"Look down on a sunny day.",
+  success:"Clue confirmed. Your detective instincts are improving."
+ },
+ {
+  title:"LEVEL 03 // THE FINAL KEY",
+  question:"What is the best gift a new year of life can bring?",
+  description:"There is no wrong personal answer. Choose your next chapter.",
+  choices:["New adventures","Unexpected happiness","A fresh start"],
+  answer:-1,
+  hint:"The final key is about what you hope for.",
+  success:"Key accepted. Every new chapter holds possibilities."
+ }
+];
+
+function startGame(){
+ const entered = document.getElementById("name").value.trim();
+ if(!entered){
+  alert("Agent identity required!");
+  return;
+ }
+ player = entered;
+ stage = 0;
+ document.getElementById("intro").classList.add("hidden");
+ document.getElementById("ending").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ loadLevel();
+}
+
+function loadLevel(){
+ solved = false;
+ const l = levels[stage];
+ document.getElementById("level").textContent = l.title;
+ document.getElementById("question").textContent = l.question;
+ document.getElementById("description").textContent = l.description;
+ document.getElementById("reply").textContent = "";
+ const area = document.getElementById("choices");
+ area.innerHTML = "";
+
+ l.choices.forEach((choice,index)=>{
+  const b = document.createElement("button");
+  b.className = "secondary";
+  b.textContent = choice;
+  b.onclick = ()=>choose(index);
+  area.appendChild(b);
+ });
+}
+
+function choose(index){
+ if(solved) return;
+ const l = levels[stage];
+
+ if(l.answer !== -1 && index !== l.answer){
+  document.getElementById("reply").textContent =
+   "ACCESS DENIED. That clue doesn't fit. Try again, Agent.";
+  return;
+ }
+
+ solved = true;
+ document.getElementById("reply").textContent =
+  "✓ " + l.success + "\n\n" +
+  (stage === levels.length-1
+   ? "All clues recovered. The final file is ready."
+   : "New evidence recovered. Proceed to the next level.");
+
+ const area = document.getElementById("choices");
+ area.innerHTML = "";
+ const next = document.createElement("button");
+ next.textContent = stage === levels.length-1
+  ? "UNLOCK THE BIRTHDAY FILE →"
+  : "NEXT CLUE →";
+ next.onclick = advance;
+ area.appendChild(next);
+}
+
+function hint(){
+ document.getElementById("reply").textContent =
+  "ORACLE // " + levels[stage].hint;
+}
+
+function advance(){
+ if(stage < levels.length-1){
+  stage++;
+  loadLevel();
+ }else{
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("ending").classList.remove("hidden");
+  document.getElementById("wish").textContent =
+   "Agent " + player + ", the investigation is over. " +
+   "Happy Birthday! May your next chapter be filled with " +
+   "courage, laughter, wonderful surprises and new adventures. " +
+   "Your next mission: make this year unforgettable. ✦";
+ }
+}
+
+function restart(){
+ document.getElementById("ending").classList.add("hidden");
+ document.getElementById("intro").classList.remove("hidden");
+ document.getElementById("name").value = "";
+ document.getElementById("game").classList.add("hidden");
+ document.getElementById("reply").textContent = "";
+}
+</script>
+</body>
+</html>
